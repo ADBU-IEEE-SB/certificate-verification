@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Certificate Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Admin - Certificate Management</h1>
+    </header>
+    <main>
+        <section id="login">
+            <h2>Login</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <p id="loginResult"></p>
+        </section>
+        <section id="add-certificate" style="display:none;">
+            <h2>Add Certificate</h2>
+            <input type="text" id="newCertificateId" placeholder="Enter New Certificate ID">
+            <input type="text" id="certificateOwner" placeholder="Enter Certificate Owner">
+            <button onclick="addCertificate()">Add</button>
+            <p id="addResult"></p>
+        </section>
+    </main>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
 
