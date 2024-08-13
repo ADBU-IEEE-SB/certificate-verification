@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Certificate Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #login-panel, #admin-panel {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 400px;
+            display: none;
+        }
+        #login-panel.active, #admin-panel.active {
+            display: block;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .tab {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .tab:hover {
+            background-color: #0056b3;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        input, button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 10px;
+        }
+        .spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Panel -->
+    <div id="login-panel" class="active">
+        <h2>Admin Login</h2>
+        <input type="email" id="login-email" placeholder="Email" />
+        <input type="password" id="login-password" placeholder="Password" />
+        <button id="login-btn">Login</button>
+        <div id="login-result"></div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel">
+        <div class="tabs">
+            <div id="single-upload-tab" class="tab">Single Upload</div>
+            <div id="bulk-upload-tab" class="tab">Bulk Upload</div>
+        </div>
+
+        <!-- Single Upload Form -->
+        <div id="single-upload-content" class="tab-content">
+            <h2>Single Certificate Upload</h2>
+            <input type="text" id="cert-id" placeholder="Certificate ID (Format: ADBU-IEEESB-<event name>-0001)" />
+            <input type="text" id="cert-name" placeholder="Receiver Name" />
+            <input type="email" id="cert-email" placeholder="Receiver Email" />
+            <input type="url" id="pdf-link" placeholder="PDF Link" />
+            <button id="single-upload-btn">Upload Certificate</button>
+            <div id="single-result"></div>
+        </div>
+
+        <!-- Bulk Upload Form -->
+        <div id="bulk-upload-content" class="tab-content">
+            <h2>Bulk Certificate Upload</h2>
+            <input type="file" id="csv-file" accept=".csv" />
+            <img src="spinner.gif" alt="Loading..." class="spinner" id="spinner">
+            <button id="bulk-upload-btn">Upload CSV</button>
+            <div id="bulk-result"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoglb9c-M8bcC8kbk8CBDvJxDGA0ZTiFg",
+            authDomain: "certificate-verification-b6070.firebaseapp.com",
+            projectId: "certificate-verification-b6070",
+            storageBucket: "certificate-verification-b6070.appspot.com",
+            messagingSenderId: "348227015318",
+            appId: "1:348227015318:web:8b3aef8102e0443d40a8b7",
+            measurementId: "G-CWKFWKDNF3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Tab functionality
+        document.getElementById('single-upload-tab').addEventListener('click', () => {
+            document.getElementById('single-upload-content').classList.add('active');
+            document.getElementById('bulk-upload-content').classList.remove('active');
+        });
+
+        document.getElementById('bulk-upload-tab').addEventListener('click', () => {
+            document.getElementById('bulk-upload-content').classList.add('active');
+            document.getElementById('single-upload-content').classList.remove('active');
+        });
+
+        // Single Upload Functionality
+        document.getElementById('single-upload-btn').addEventListener('click', async () => {
+            const certId = document.getElementById('cert-id').value.trim();
+            const name = document.getElementById('cert-name').value.trim();
+            const email = document.getElementById('cert-email').value.trim();
+            const pdfLink = document.getElementById('pdf-link').value.trim();
+
+            if (!certId || !name || !email || !pdfLink) {
+                document.getElementById('single-result').textContent = 'Error: All fields are required.';
+                return;
+            }
+
+            const docRef = doc(db, "certificates", certId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                document.getElementById('single-result').textContent = `Error: Certificate ID ${certId} already exists.`;
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, "certificates", certId), {
+                    name,
+                    email,
+                    pdfLink
+                });
+                document.getElementById('single-result').textContent = 'Certificate uploaded successfully!';
+                // Clear the form
+                document.getElementById('cert-id').value = '';
+                document.getElementById('cert-name').value = '';
+                document.getElementById('cert-email').value = '';
+                document.getElementById('pdf-link').value = '';
+            } catch (error) {
+                document.getElementById('single-result').textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Bulk Upload Functionality
+        document.getElementById('bulk-upload-btn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('csv-file');
+    const file = fileInput.files[0];
+    const spinner = document.getElementById('spinner');
+    const resultDiv = document.getElementById('bulk-result');
+
+    if (!file) {
+        resultDiv.textContent = 'Please select a CSV file.';
+        return;
+    }
+
+    spinner.style.display = 'block'; // Show the spinner
+    resultDiv.textContent = ''; // Clear any previous result
+
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        const text = e.target.result;
+        const rows = text.split('\n').filter(row => row.trim() !== '');
+        let errorOccurred = false;
+
+        for (const row of rows) {
+            const [certId, name, email, pdfLink] = row.split(',').map(cell => cell.trim());
+
+            if (!certId || !name || !email || !pdfLink) {
+                resultDiv.textContent = `Error: All fields are required in row: ${row}`;
+                errorOccurred = true;
+                break;
+            }
+
+            const docRef = doc(db, "certificates", certId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                resultDiv.textContent = `Error: Certificate ID ${certId} already exists. Aborting upload.`;
+                errorOccurred = true;
+                break;
+            }
+
+            try {
+                await setDoc(doc(db, "certificates", certId), {
+                    name,
+                    email,
+                    pdfLink
+                });
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+                errorOccurred = true;
+                break;
+            }
+        }
+
+        if (!errorOccurred) {
+            resultDiv.textContent = 'Certificates uploaded successfully!';
+            fileInput.value = ''; // Clear the file input
+        }
+
+        spinner.style.display = 'none'; // Hide the spinner
+    };
+
+    reader.readAsText(file);
+});
+
+        // Authentication State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-panel').classList.remove('active');
+                document.getElementById('admin-panel').classList.add('active');
+            } else {
+                document.getElementById('admin-panel').classList.remove('active');
+                document.getElementById('login-panel').classList.add('active');
+            }
+        });
+
+        // Login Functionality
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    document.getElementById('login-result').textContent = 'Login successful!';
+                })
+                .catch((error) => {
+                    document.getElementById('login-result').textContent = `Error: ${error.message}`;
+                });
+        });
+    </script>
+</body>
+</html>

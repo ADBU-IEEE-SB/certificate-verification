@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #verify-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 10px;
+        }
+        .pdf-link {
+            margin-top: 10px;
+            display: block;
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="verify-form">
+        <h2>Verify Certificate</h2>
+        <input type="text" id="cert-id" placeholder="Enter Certificate ID" />
+        <button id="verify-btn">Verify</button>
+        <div id="result"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoglb9c-M8bcC8kbk8CBDvJxDGA0ZTiFg",
+            authDomain: "certificate-verification-b6070.firebaseapp.com",
+            projectId: "certificate-verification-b6070",
+            storageBucket: "certificate-verification-b6070.appspot.com",
+            messagingSenderId: "348227015318",
+            appId: "1:348227015318:web:8b3aef8102e0443d40a8b7",
+            measurementId: "G-CWKFWKDNF3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Verify certificate functionality
+        document.getElementById('verify-btn').addEventListener('click', async () => {
+            const certId = document.getElementById('cert-id').value;
+
+            if (certId === '') {
+                document.getElementById('result').textContent = 'Please enter a certificate ID.';
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "certificates", certId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('result').innerHTML = `
+                        <p>Receiver Name: ${data.name}</p>
+                        <p>Receiver Email: ${data.email}</p>
+                        <a href="${data.pdfLink}" class="pdf-link" target="_blank">View Certificate PDF</a>
+                    `;
+                } else {
+                    document.getElementById('result').textContent = 'No certificate found for this ID.';
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
