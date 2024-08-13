@@ -11,7 +11,7 @@
     <h1>Admin Login</h1>
     <form id="loginForm">
       <input type="email" id="adminEmail" placeholder="Email" required>
-      <input type="password" id="adminPassword" placeholder="Password" required>
+      <input type="password" id="adminPassword" placeholder="Password" autocomplete="current-password" required>
       <button type="submit">Login</button>
     </form>
   </div>
@@ -30,10 +30,15 @@
     <button onclick="logout()">Logout</button>
   </div>
 
+  <!-- Load Firebase libraries -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  
+  <!-- Firebase configuration -->
   <script src="firebaseConfig.js"></script>
+  
+  <!-- Admin page logic -->
   <script src="admin.js"></script>
 </body>
 </html>
