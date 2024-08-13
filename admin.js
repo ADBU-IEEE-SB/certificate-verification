@@ -1,8 +1,32 @@
+const loginContainer = document.getElementById('login-container');
+const certFormContainer = document.getElementById('certForm-container');
+
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = document.getElementById('adminEmail').value;
+  const password = document.getElementById('adminPassword').value;
+  signIn(email, password);
+});
+
+function signIn(email, password) {
+  auth.signInWithEmailAndPassword(email, password)
+    .catch(error => {
+      console.error('Error during sign-in:', error);
+    });
+}
+
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = 'index.html';
+  });
+}
+
 auth.onAuthStateChanged(user => {
   if (user) {
-    // User is signed in
-    const certForm = document.getElementById('certForm');
-    certForm.addEventListener('submit', (e) => {
+    loginContainer.style.display = 'none';
+    certFormContainer.style.display = 'block';
+
+    document.getElementById('certForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const certId = document.getElementById('certId').value;
       const eventName = document.getElementById('eventName').value;
@@ -24,21 +48,7 @@ auth.onAuthStateChanged(user => {
       });
     });
   } else {
-    // User is signed out
-    window.location.href = 'index.html'; // Redirect to index if not signed in
+    loginContainer.style.display = 'block';
+    certFormContainer.style.display = 'none';
   }
 });
-
-// Logout function
-function logout() {
-  auth.signOut().then(() => {
-    window.location.href = 'index.html';
-  });
-}
-
-// Sign in function (for admin only)
-function signIn(email, password) {
-  auth.signInWithEmailAndPassword(email, password).catch(error => {
-    console.error('Error during sign-in:', error);
-  });
-}
