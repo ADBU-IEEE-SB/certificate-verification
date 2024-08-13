@@ -27,7 +27,7 @@
 
  -->
 
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -141,17 +141,26 @@
             const code = document.getElementById("verificationCode").value;
             const result = document.getElementById("result");
             const spinner = document.getElementById("spinner");
-            const scriptURL = "https://script.google.com/macros/s/AKfycbxotnzp1CSNANsP_E6f-sMhyQM645rJXEOfvEqm8KQQIF4OYpq5NuHFuKhgyxJKMUqX2A/exec"; // Your script URL
+            const scriptURL = "https://script.google.com/macros/s/AKfycbxotnzp1CSNANsP_E6f-sMhyQM645rJXEOfvEqm8KQQIF4OYpq5NuHFuKhgyxJKMUqX2A/exec";
             
             // Show the spinner and clear previous results
             spinner.style.display = "block";
             result.textContent = "";
-
+    
             fetch(`${scriptURL}?code=${encodeURIComponent(code)}`)
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
                     spinner.style.display = "none"; // Hide spinner
-                    result.textContent = data;
+    
+                    if (data.status === "valid") {
+                        result.innerHTML = `Certificate is valid!<br>
+                                            Participant: ${data.participant},<br>
+                                            Event: ${data.event},<br>
+                                            Date: ${data.date}`;
+                    } else {
+                        result.textContent = data.message;
+                        result.style.color = "red";
+                    }
                 })
                 .catch(error => {
                     spinner.style.display = "none"; // Hide spinner
@@ -160,5 +169,6 @@
                 });
         });
     </script>
+    
 </body>
 </html>
