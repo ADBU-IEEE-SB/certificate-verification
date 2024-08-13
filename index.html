@@ -6,8 +6,8 @@
     <title>Certificate Verification</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #e0eafc, #cfdef3);
             color: #333;
             display: flex;
             justify-content: center;
@@ -16,39 +16,63 @@
             margin: 0;
         }
         #verify-form {
-            background-color: #fff;
+            background-color: #ffffff;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 300px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 320px;
             text-align: center;
+            border: 2px solid #007bff;
+        }
+        h2 {
+            color: #007bff;
+            margin-bottom: 20px;
         }
         input {
             width: calc(100% - 20px);
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            font-size: 16px;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             background-color: #007bff;
             color: #fff;
+            font-size: 16px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #0056b3;
         }
         #result {
-            margin-top: 10px;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        #result p {
+            margin: 10px 0;
         }
         .pdf-link {
             margin-top: 10px;
-            display: block;
+            display: inline-block;
             color: #007bff;
             text-decoration: none;
+            font-weight: bold;
+        }
+        .pdf-link:hover {
+            text-decoration: underline;
+        }
+        .valid {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .invalid {
+            color: #dc3545;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -84,7 +108,7 @@
             const certId = document.getElementById('cert-id').value;
 
             if (certId === '') {
-                document.getElementById('result').textContent = 'Please enter a certificate ID.';
+                document.getElementById('result').innerHTML = '<p class="invalid">Please enter a certificate ID.</p>';
                 return;
             }
 
@@ -95,17 +119,17 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById('result').innerHTML = `
-                        <p>Name: ${data.name}</p>
-                        <p>Email: ${data.email}</p>
-                        <p>Event: ${data.eventName}</p>
-                        <p>Date: ${data.date}</p>
+                        <p class="valid">Certificate is valid!</p>
+                        <p><strong>Participant:</strong> ${data.name}</p>
+                        <p><strong>Event:</strong> ${data.eventName}</p>
+                        <p><strong>Date:</strong> ${data.date}</p>
                         <a href="${data.pdfLink}" class="pdf-link" target="_blank">View Certificate PDF</a>
                     `;
                 } else {
-                    document.getElementById('result').textContent = 'No certificate found for this ID.';
+                    document.getElementById('result').innerHTML = '<p class="invalid">No certificate found for this ID.</p>';
                 }
             } catch (error) {
-                document.getElementById('result').textContent = `Error: ${error.message}`;
+                document.getElementById('result').innerHTML = `<p class="invalid">Error: ${error.message}</p>`;
             }
         });
     </script>
