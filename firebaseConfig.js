@@ -1,10 +1,11 @@
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAoglb9c-M8bcC8kbk8CBDvJxDGA0ZTiFg",
+  authDomain: "certificate-verification-b6070.firebaseapp.com",
+  projectId: "certificate-verification-b6070",
+  storageBucket: "certificate-verification-b6070.appspot.com",
+  messagingSenderId: "348227015318",
+  appId: "1:348227015318:web:8b3aef8102e0443d40a8b7",
+  measurementId: "G-CWKFWKDNF3"
 };
 
 // Initialize Firebase
