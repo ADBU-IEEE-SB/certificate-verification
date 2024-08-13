@@ -95,8 +95,10 @@
         <div id="single-upload-content" class="tab-content">
             <h2>Single Certificate Upload</h2>
             <input type="text" id="cert-id" placeholder="Certificate ID (Format: ADBU-IEEESB-<event name>-0001)" />
-            <input type="text" id="cert-name" placeholder="Receiver Name" />
+            <input type="text" id="event-name" placeholder="Event Name" />
+            <input type="text" id="name" placeholder="Name" />
             <input type="email" id="cert-email" placeholder="Receiver Email" />
+            <input type="date" id="date" placeholder="Date" />
             <input type="url" id="pdf-link" placeholder="PDF Link" />
             <button id="single-upload-btn">Upload Certificate</button>
             <div id="single-result"></div>
@@ -147,11 +149,13 @@
         // Single Upload Functionality
         document.getElementById('single-upload-btn').addEventListener('click', async () => {
             const certId = document.getElementById('cert-id').value.trim();
-            const name = document.getElementById('cert-name').value.trim();
+            const eventName = document.getElementById('event-name').value.trim();
+            const name = document.getElementById('name').value.trim();
             const email = document.getElementById('cert-email').value.trim();
+            const date = document.getElementById('date').value.trim();
             const pdfLink = document.getElementById('pdf-link').value.trim();
 
-            if (!certId || !name || !email || !pdfLink) {
+            if (!certId || !eventName || !name || !email || !date || !pdfLink) {
                 document.getElementById('single-result').textContent = 'Error: All fields are required.';
                 return;
             }
@@ -166,15 +170,19 @@
 
             try {
                 await setDoc(doc(db, "certificates", certId), {
+                    eventName,
                     name,
                     email,
+                    date,
                     pdfLink
                 });
                 document.getElementById('single-result').textContent = 'Certificate uploaded successfully!';
                 // Clear the form
                 document.getElementById('cert-id').value = '';
-                document.getElementById('cert-name').value = '';
+                document.getElementById('event-name').value = '';
+                document.getElementById('name').value = '';
                 document.getElementById('cert-email').value = '';
+                document.getElementById('date').value = '';
                 document.getElementById('pdf-link').value = '';
             } catch (error) {
                 document.getElementById('single-result').textContent = `Error: ${error.message}`;
@@ -183,66 +191,68 @@
 
         // Bulk Upload Functionality
         document.getElementById('bulk-upload-btn').addEventListener('click', async () => {
-    const fileInput = document.getElementById('csv-file');
-    const file = fileInput.files[0];
-    const spinner = document.getElementById('spinner');
-    const resultDiv = document.getElementById('bulk-result');
+            const fileInput = document.getElementById('csv-file');
+            const file = fileInput.files[0];
+            const spinner = document.getElementById('spinner');
+            const resultDiv = document.getElementById('bulk-result');
 
-    if (!file) {
-        resultDiv.textContent = 'Please select a CSV file.';
-        return;
-    }
-
-    spinner.style.display = 'block'; // Show the spinner
-    resultDiv.textContent = ''; // Clear any previous result
-
-    const reader = new FileReader();
-    reader.onload = async function (e) {
-        const text = e.target.result;
-        const rows = text.split('\n').filter(row => row.trim() !== '');
-        let errorOccurred = false;
-
-        for (const row of rows) {
-            const [certId, name, email, pdfLink] = row.split(',').map(cell => cell.trim());
-
-            if (!certId || !name || !email || !pdfLink) {
-                resultDiv.textContent = `Error: All fields are required in row: ${row}`;
-                errorOccurred = true;
-                break;
+            if (!file) {
+                resultDiv.textContent = 'Please select a CSV file.';
+                return;
             }
 
-            const docRef = doc(db, "certificates", certId);
-            const docSnap = await getDoc(docRef);
+            spinner.style.display = 'block'; // Show the spinner
+            resultDiv.textContent = ''; // Clear any previous result
 
-            if (docSnap.exists()) {
-                resultDiv.textContent = `Error: Certificate ID ${certId} already exists. Aborting upload.`;
-                errorOccurred = true;
-                break;
-            }
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const text = e.target.result;
+                const rows = text.split('\n').filter(row => row.trim() !== '');
+                let errorOccurred = false;
 
-            try {
-                await setDoc(doc(db, "certificates", certId), {
-                    name,
-                    email,
-                    pdfLink
-                });
-            } catch (error) {
-                resultDiv.textContent = `Error: ${error.message}`;
-                errorOccurred = true;
-                break;
-            }
-        }
+                for (const row of rows) {
+                    const [certId, eventName, name, email, date, pdfLink] = row.split(',').map(cell => cell.trim());
 
-        if (!errorOccurred) {
-            resultDiv.textContent = 'Certificates uploaded successfully!';
-            fileInput.value = ''; // Clear the file input
-        }
+                    if (!certId || !eventName || !name || !email || !date || !pdfLink) {
+                        resultDiv.textContent = `Error: All fields are required in row: ${row}`;
+                        errorOccurred = true;
+                        break;
+                    }
 
-        spinner.style.display = 'none'; // Hide the spinner
-    };
+                    const docRef = doc(db, "certificates", certId);
+                    const docSnap = await getDoc(docRef);
 
-    reader.readAsText(file);
-});
+                    if (docSnap.exists()) {
+                        resultDiv.textContent = `Error: Certificate ID ${certId} already exists. Aborting upload.`;
+                        errorOccurred = true;
+                        break;
+                    }
+
+                    try {
+                        await setDoc(doc(db, "certificates", certId), {
+                            eventName,
+                            name,
+                            email,
+                            date,
+                            pdfLink
+                        });
+                    } catch (error) {
+                        resultDiv.textContent = `Error: ${error.message}`;
+                        errorOccurred = true;
+                        break;
+                    }
+                }
+
+                if (!errorOccurred) {
+                    resultDiv.textContent = 'Certificates uploaded successfully!';
+                    fileInput.value = ''; // Clear the file input
+                }
+
+                spinner.style.display = 'none'; // Hide the spinner
+            };
+
+            reader.readAsText(file);
+        });
 
         // Authentication State Listener
         onAuthStateChanged(auth, (user) => {
