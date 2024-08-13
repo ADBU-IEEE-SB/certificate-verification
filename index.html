@@ -48,7 +48,7 @@
             transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #006699;
+            background-color: #0056b3;
         }
         #result {
             margin-top: 20px;
@@ -75,6 +75,12 @@
             color: #dc3545;
             font-weight: bold;
         }
+        .spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            margin: 20px auto;
+        }
     </style>
 </head>
 <body>
@@ -83,6 +89,7 @@
         <input type="text" id="cert-id" placeholder="Enter Certificate ID" />
         <button id="verify-btn">Verify</button>
         <div id="result"></div>
+        <img id="spinner" src="spinner.gif" class="spinner" alt="Loading...">
     </div>
 
     <script type="module">
@@ -107,19 +114,26 @@
         // Verify certificate functionality
         document.getElementById('verify-btn').addEventListener('click', async () => {
             const certId = document.getElementById('cert-id').value;
+            const spinner = document.getElementById('spinner');
+            const resultDiv = document.getElementById('result');
 
             if (certId === '') {
-                document.getElementById('result').innerHTML = '<p class="invalid">Please enter a certificate ID.</p>';
+                resultDiv.innerHTML = '<p class="invalid">Please enter a certificate ID.</p>';
                 return;
             }
+
+            spinner.style.display = 'block';
+            resultDiv.innerHTML = '';
 
             try {
                 const docRef = doc(db, "certificates", certId);
                 const docSnap = await getDoc(docRef);
 
+                spinner.style.display = 'none';
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById('result').innerHTML = `
+                    resultDiv.innerHTML = `
                         <p class="valid">Certificate is valid!</p>
                         <p><strong>Participant:</strong> ${data.name}</p>
                         <p><strong>Event:</strong> ${data.eventName}</p>
@@ -127,10 +141,11 @@
                         <a href="${data.pdfLink}" class="pdf-link" target="_blank">View Certificate PDF</a>
                     `;
                 } else {
-                    document.getElementById('result').innerHTML = '<p class="invalid">No certificate found for this ID.</p>';
+                    resultDiv.innerHTML = '<p class="invalid">No certificate found for this ID.</p>';
                 }
             } catch (error) {
-                document.getElementById('result').innerHTML = `<p class="invalid">Error: ${error.message}</p>`;
+                spinner.style.display = 'none';
+                resultDiv.innerHTML = `<p class="invalid">Error: ${error.message}</p>`;
             }
         });
     </script>
