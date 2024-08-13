@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        form {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #66BB6A, #4CAF50);
+            transform: translateY(-2px);
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.2em;
+            color: #555;
+            min-height: 40px;
+        }
+
+        /* Loading spinner styles */
+        .spinner {
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Certificate Verification</h1>
+    <form id="verificationForm">
+        <input type="text" id="verificationCode" name="code" placeholder="Enter Verification Code" required>
+        <button type="submit">Verify</button>
+    </form>
+    <div class="spinner" id="spinner"></div>
+    <p id="result"></p>
+
+    <script>
+        document.getElementById("verificationForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            const code = document.getElementById("verificationCode").value;
+            const result = document.getElementById("result");
+            const spinner = document.getElementById("spinner");
+            const scriptURL = "https://script.google.com/macros/s/AKfycbxotnzp1CSNANsP_E6f-sMhyQM645rJXEOfvEqm8KQQIF4OYpq5NuHFuKhgyxJKMUqX2A/exec";
+            
+            // Show the spinner and clear previous results
+            spinner.style.display = "block";
+            result.textContent = "";
+    
+            fetch(`${scriptURL}?code=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(data => {
+                    spinner.style.display = "none"; // Hide spinner
+    
+                    if (data.status === "valid") {
+                        result.innerHTML = `Certificate is valid!<br>
+                                            Participant: ${data.participant},<br>
+                                            Event: ${data.event},<br>
+                                            Date: ${data.date}`;
+                    } else {
+                        result.textContent = data.message;
+                        result.style.color = "red";
+                    }
+                })
+                .catch(error => {
+                    spinner.style.display = "none"; // Hide spinner
+                    result.textContent = "An error occurred while verifying the code.";
+                    result.style.color = "red";
+                });
+        });
+    </script>
+    
+</body>
+</html>
